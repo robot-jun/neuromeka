@@ -1,0 +1,93 @@
+<설치 알림 사항>
+현재 문서는 ros2 humble 22.04 환경에서 작성되었다.
+아래 사이트는 Neuromeka docs 공식 홈페이지 문서이다.
+http://docs.neuromeka.com/3.2.0/kr/IndyAPI/indydcp3_cpp/
+
+<설치 요구 사항>
+프로젝트 구성 및 빌드를 위한 CMake가 필요하다.
+C++17 이상을 지원하는 C++ 컴파일러가 필요하다.
+IndyDCP3 라이브러리 파일 및 헤더가 필요하다.
+
+<설치 방법>
+1. gRPC 설치
+gRPC 공식 웹사이트에 기재된 내용을 요약한 것이다.
+자세한 내용은 https://grpc.io/docs/languages/cpp/quickstart/ 참고한다.
+
+로컬에 설치된 패키지를 보관할 디렉토리를 선택한다.
+환경 변수가 MY_INSTALL_DIR이 이 디렉토리 경로를 보유하고 있다고 가정한다.
+터미널에서 아래 명령어를 입력 후 디렉터리가 있는지 확인한다.
+export MY_INSTALL_DIR=$HOME/.local
+
+아래 명령어를 입력하여 로컬 bin 폴더를 경로 변수에 추가한다.
+mkdir -p $MY_INSTALL_DIR
+
+예를들어
+export PATH="$MY_INSTALL_DIR/bin:$PATH”
+
+CMake 설치 버전 3.13 이상의 CMake가 필요하다.
+sudo apt install -y cmake
+
+CMake 버전 확인
+cmake --version
+
+리눅스에서 시스템 전체 CMake 버전이 오래된 경우가 있다.
+로컬 설치 디렉토리에 최신 버전을 설치하려면 다음 명령을 사용한다.
+wget -q -O cmake-linux.sh 
+https://github.com/Kitware/CMake/releases/download/v3.19.6/cmake-3.19.6-Linux-x86_64.sh
+sh cmake-linux.sh -- --skip-license --prefix=$MY_INSTALL_DIR
+rm cmake-linux.sh
+cmake 버전 확인 후 v3.19 → 해당 버전으로 수정한다.
+  
+기타 필요한 도구 설치 gRPC를 빌드하는 데 필요한 기본 도구를 설치한다.
+sudo apt install -y build-essential autoconf libtool pkg-config
+
+gRPC 저장소 및 하위 모듈 클론
+git clone --recurse-submodules -b v1.59.0 --depth 1 --shallow-submodules
+https://github.com/grpc/grpc
+
+gRPC 및 프로토콜 버퍼 빌드 및 설치
+gRPC 애플리케이션은 종종 서비스 정의 및 데이터 직렬화를 위해 예제 코드에서와 같이 프로토콜 버퍼를 사용한다.
+gRPC 및 프로토콜 버퍼를 빌드하고 로컬로 설치하려면 다음 명령을 실행한다.
+
+cd grpc
+mkdir -p cmake/build
+pushd cmake/build
+cmake -DgRPC_INSTALL=ON \
+-DgRPC_BUILD_TESTS=OFF \
+-DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR \
+../..
+make -j 32
+make install
+popd
+
+2. 예제 다운로드 및 빌드
+예제 저장소 클론
+git clone https://github.com/neuromeka-robotics/neuromeka-package.git
+
+C++ 폴더로 이동
+cd neuromeka-package/cpp/src
+
+example_indy3.cpp 파일에서 ip 수정 (line_2878)
+
+다시 C++ 폴더로 이동
+cd neuromeka-package/cpp
+mkdir build
+cd build
+cmake ..
+make -j32
+
+/home/user/neuromeka-package/cpp/build 여기에 들어가면
+example_indydcp3가 있을 것이다.
+
+확인 후 아래 명령어를 명령창에 입력한다.
+./example_indydcp3
+
+그럼 C++ 구동을 위한 환경 구성은 끝이다.
+
+test를 아래 과정으로 반복해서 시도하면 로봇 구동이 될 것이다.
+cd neuromeka-package/cpp
+mkdir build
+cmake ..
+make -j32 (명령창에서 nproc 입력하고 cpu 갯수 확인 후 수정)
+본인은 32개로 확인!
+ 
